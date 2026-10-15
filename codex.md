@@ -5,7 +5,7 @@ Last updated: 2026-10-16 01:10 (Europe/Ljubljana) - Antigravity session
 ## Project
 
 - Flutter native client for `sejbosejbo.fyi`.
-- App version in `pubspec.yaml`: `1.18.3+28` (unreleased fixes documented in `CHANGELOG.md`).
+- App version in `pubspec.yaml`: `1.18.3+29` (unreleased fixes documented in `CHANGELOG.md`).
 - Platforms: Android, iOS, macOS, Windows.
 - **Windows native build**: Verified working (`build\windows\x64\runner\Release\sejbosejbo.exe`). Distributable standalone app published to `D:\windows_app_sejbosejbo\`.
 - **Android APK & AAB builds**: Verified working on this machine (`build\app\outputs\flutter-apk\app-debug.apk` and `build\app\outputs\bundle\release\app-release.aab`).
