@@ -28,6 +28,7 @@ fun resolveKeystoreFile(rawPath: String?): File? {
     val candidates = listOf(
         file(rawPath),
         rootProject.file(rawPath),
+        rootProject.file("../$fileName"),
         rootProject.file("app/$rawPath"),
         File(System.getProperty("user.home"), fileName),
         File("D:/Users/zigav", fileName)
