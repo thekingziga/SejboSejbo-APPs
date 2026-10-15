@@ -20,7 +20,7 @@ $FlutterRoot = if ($env:FLUTTER_ROOT) { $env:FLUTTER_ROOT }
                else { 'D:\dev\flutter' }
 # Baked into the binary. Without it the app silently starts in demo mode on
 # bundled sample posts instead of talking to the real site.
-$ApiBaseUrl  = 'https://sejbosejbo.fyi'
+$ApiBaseUrl  = if ($env:API_BASE_URL) { $env:API_BASE_URL } else { 'https://sejbosejbo.fyi' }
 
 # Project root = parent of this script's folder, so the script works no matter
 # where the zip was extracted.

@@ -1,0 +1,7 @@
+# Example release signing configuration
+# Copy this file to android/key.properties and replace with your keystore path and passwords.
+# Do NOT commit key.properties to git!
+storePassword=yourKeystorePassword
+keyPassword=yourKeyPassword
+keyAlias=upload
+storeFile=upload-keystore.jks

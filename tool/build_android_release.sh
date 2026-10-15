@@ -25,8 +25,10 @@ if [[ ! -r "$keystore_path" ]]; then
   exit 1
 fi
 
+api_base_url="${API_BASE_URL:-https://sejbosejbo.fyi}"
+
 flutter build appbundle \
   --release \
-  --dart-define=API_BASE_URL=https://sejbosejbo.fyi
+  --dart-define="API_BASE_URL=$api_base_url"
 
 echo "Built build/app/outputs/bundle/release/app-release.aab"
