@@ -5,8 +5,15 @@
 #include "flutter_window.h"
 #include "utils.h"
 
+#include <app_links/app_links_plugin_c_api.h>
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  // Forward the link to an existing instance, if any, then exit.
+  if (SendAppLinkToInstance()) {
+    return EXIT_SUCCESS;
+  }
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -23,6 +30,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
       GetCommandLineArguments();
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
+
+  // Register the custom URL protocol handler so links like sejbosejbo://post/123
+  // launch this application.
+  RegisterUrlScheme(L"sejbosejbo");
 
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);

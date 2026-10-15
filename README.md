@@ -8,16 +8,16 @@ web view.
 
 | Piece | State |
 |---|---|
-| UI — dashboard, gallery, upload, support | done, tested |
+| UI — dashboard, gallery, upload, support, marketplace | done |
 | Design system (`lib/theme.dart`) | done |
-| API client (`lib/api.dart`) | written against a contract that does not exist server-side yet |
-| Demo mode | on by default, so the app runs today |
+| API client (`lib/api.dart`) | live against `sejbosejbo.fyi`; release builds default to production |
+| Demo mode | debug-only default, so the app runs without a server |
 | Donations — Stripe rail | code done, needs the server endpoint |
 | Donations — Apple/Google rail | code done, needs store products + server verification |
 | **iOS build** | **working** — runs on simulator (Xcode 26.6) |
 | **Android build** | **working** — APK runs on emulator (SDK 36) |
 | **macOS build** | **working** — runs as a desktop app |
-| Windows build | not built — needs a Windows machine |
+| **Windows build** | **working** — builds native x64 binary with MSVC 2022 |
 
 ## Run it
 
@@ -25,11 +25,18 @@ web view.
 flutter run
 ```
 
-With no `API_BASE_URL` it starts in **demo mode** on bundled sample posts and
-shows a banner saying so. Point it at the real API once the endpoints exist:
+Debug runs without `API_BASE_URL` start in **demo mode** on bundled sample
+posts and show a banner saying so. Release builds default to the live API.
+To point a debug run at the live API:
 
 ```bash
 flutter run --dart-define=API_BASE_URL=https://sejbosejbo.fyi
+```
+
+Build a signed Android release bundle with the production API configured:
+
+```bash
+tool/build_android_release.sh
 ```
 
 `--dart-define=START_TAB=2` opens straight onto a given tab, for screenshots.
@@ -138,9 +145,9 @@ makes the store replay the purchase on every launch and blocks repeat tipping.
 
 ## The API
 
-The server side does not exist yet. `docs/API_PROMPT.md` is a self-contained
-prompt — paste it into a Claude Code session opened on the website repo and it
-will build the endpoints this app already expects.
+The JSON API is live on `sejbosejbo.fyi`; the app uses it for the archive,
+uploads, comments and marketplace. `docs/API_PROMPT.md` records the original
+API contract and remains useful when changing the client/server interface.
 
 Identifiers differ per platform, deliberately:
 

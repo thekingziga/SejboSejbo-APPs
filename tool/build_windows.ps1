@@ -11,7 +11,13 @@
 
 $ErrorActionPreference = 'Stop'
 
-$FlutterRoot = 'C:\src\flutter'
+# Where Flutter lives. $env:FLUTTER_ROOT wins; otherwise an existing install
+# at the old C:\src\flutter location is reused, and a fresh clone goes to D:
+# (large SDKs are kept off the system drive on this machine).
+$FlutterRoot = if ($env:FLUTTER_ROOT) { $env:FLUTTER_ROOT }
+               elseif (Test-Path 'D:\dev\flutter\bin\flutter.bat') { 'D:\dev\flutter' }
+               elseif (Test-Path 'C:\src\flutter\bin\flutter.bat') { 'C:\src\flutter' }
+               else { 'D:\dev\flutter' }
 # Baked into the binary. Without it the app silently starts in demo mode on
 # bundled sample posts instead of talking to the real site.
 $ApiBaseUrl  = 'https://sejbosejbo.fyi'

@@ -9,6 +9,52 @@ Each entry has a **Play release notes** block, already trimmed to Play's
 
 ---
 
+## Unreleased
+
+**Fixed**
+- **Forced updates on Windows no longer open the Android Play Store.** Only
+  Android goes to Play; other platforms open the new optional `update_url`
+  from `/api/v1/app-version`, or the website without one.
+- **Android notifications use their own channel.** `sejbosejbo_posts` was named
+  in the manifest but never created, so pushes landed in Firebase's fallback
+  "Miscellaneous" channel. `MainActivity` now creates it (EN/SL names).
+- **Photo Edit is hidden where it cannot work.** `image_cropper` only exists on
+  Android and iOS; on Windows/macOS the button always ended in an error.
+- `tool/build_windows.ps1` honours `FLUTTER_ROOT`, reuses `C:\src\flutter` if
+  present, and otherwise clones Flutter to `D:\dev\flutter`.
+- **Windows deep linking and single-instance activation.** Registered the
+  `sejbosejbo://` protocol on startup in HKCU, wired single-instance link
+  forwarding in the Windows runner, and enabled parsing post links from both
+  web https and custom schemes.
+- Receipt-verification tests passed only on a macOS host (store billing was
+  read from the host OS). `DonationGateway` now takes `storeBilling:` so they
+  run on Windows too.
+
+---
+
+## 1.18.3+28
+
+**Fixed**
+- Release builds without an explicit `API_BASE_URL` now connect to the live
+  service instead of silently showing bundled demo data. Debug builds still
+  use demo data by default.
+- Added `tool/build_android_release.sh` to set the production API URL explicitly
+  when creating an Android release bundle.
+- Raised the iOS minimum deployment target from 13 to 15 because the current
+  Xcode toolchain no longer supports building for iOS 13 or 14.
+
+### Play release notes
+
+**en-US**
+```
+Fixes an issue that could show sample posts instead of the live archive.
+```
+
+**sl**
+```
+Odpravljena je napaka, zaradi katere so se namesto pravih objav lahko prikazali vzorčni podatki.
+```
+
 ## 1.18.2+27
 
 For website 1.43.0 and 1.44.0: comments and listings are screened too, and

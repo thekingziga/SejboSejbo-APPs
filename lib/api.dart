@@ -97,9 +97,19 @@ class Held<T> extends Submitted<T> {
 
 class Api {
   Api({String? baseUrl, http.Client? client, bool? useDemoData, this.prefs})
-    : baseUrl = (baseUrl ?? const String.fromEnvironment('API_BASE_URL')).trim(),
+    : baseUrl = _resolveBaseUrl(baseUrl),
       _client = client ?? http.Client() {
     _demo = useDemoData ?? this.baseUrl.isEmpty;
+  }
+
+  /// A release build must never quietly ship the sample feed. Debug builds
+  /// keep demo mode as the easy default; production builds use the live site
+  /// unless a different API_BASE_URL was explicitly supplied.
+  static String _resolveBaseUrl(String? override) {
+    final configured =
+        (override ?? const String.fromEnvironment('API_BASE_URL')).trim();
+    if (configured.isNotEmpty) return configured;
+    return kReleaseMode ? 'https://sejbosejbo.fyi' : '';
   }
 
   final String baseUrl;

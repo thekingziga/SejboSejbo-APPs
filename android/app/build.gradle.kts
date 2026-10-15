@@ -22,8 +22,21 @@ val keystoreProperties = Properties().apply {
         FileInputStream(keystorePropertiesFile).use { load(it) }
     }
 }
-val hasReleaseKeystore =
-    keystorePropertiesFile.exists() && keystoreProperties.getProperty("storeFile") != null
+fun resolveKeystoreFile(rawPath: String?): File? {
+    if (rawPath.isNullOrBlank()) return null
+    val fileName = File(rawPath).name
+    val candidates = listOf(
+        file(rawPath),
+        rootProject.file(rawPath),
+        rootProject.file("app/$rawPath"),
+        File(System.getProperty("user.home"), fileName),
+        File("D:/Users/zigav", fileName)
+    )
+    return candidates.firstOrNull { it.exists() && it.isFile }
+}
+
+val releaseKeystoreFile = resolveKeystoreFile(keystoreProperties.getProperty("storeFile"))
+val hasReleaseKeystore = keystorePropertiesFile.exists() && releaseKeystoreFile != null
 
 android {
     namespace = "com.thekingziga.sejbosejbo"
@@ -44,11 +57,11 @@ android {
     }
 
     signingConfigs {
-        if (hasReleaseKeystore) {
+        if (hasReleaseKeystore && releaseKeystoreFile != null) {
             create("release") {
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storeFile = releaseKeystoreFile
                 storePassword = keystoreProperties.getProperty("storePassword")
             }
         }

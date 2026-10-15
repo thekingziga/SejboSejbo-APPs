@@ -15,6 +15,12 @@ analyzer:
     # which pulls in packages we do not depend on. Analysing generated build
     # output is never useful and here it drowns out real findings.
     - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   # The lint rules applied to this project can be customized in the

@@ -39,6 +39,22 @@ class SejbosejboApp extends StatefulWidget {
 
   final Prefs prefs;
 
+  /// Extracts the post ID from either an https URL or a custom scheme URI:
+  /// - `https://sejbosejbo.fyi/post/123`
+  /// - `sejbosejbo://post/123`
+  /// - `sejbosejbo://sejbosejbo.fyi/post/123`
+  static int? parsePostId(Uri uri) {
+    if (uri.host == 'post' && uri.pathSegments.isNotEmpty) {
+      return int.tryParse(uri.pathSegments.first);
+    }
+    final segments = uri.pathSegments;
+    final i = segments.indexOf('post');
+    if (i != -1 && i + 1 < segments.length) {
+      return int.tryParse(segments[i + 1]);
+    }
+    return null;
+  }
+
   @override
   State<SejbosejboApp> createState() => _SejbosejboAppState();
 }
@@ -107,12 +123,8 @@ class _SejbosejboAppState extends State<SejbosejboApp> with WidgetsBindingObserv
   }
 
   void _openLink(Uri uri) {
-    final segments = uri.pathSegments;
-    final i = segments.indexOf('post');
-    if (i == -1 || i + 1 >= segments.length) return;
-    final id = int.tryParse(segments[i + 1]);
-    if (id == null) return;
-    _openPost(id);
+    final id = SejbosejboApp.parsePostId(uri);
+    if (id != null) _openPost(id);
   }
 
   /// Shared by deep links and notification taps: both must land on the post

@@ -383,7 +383,13 @@ enum ReportTarget {
 /// response that is missing pieces, must leave the app fully usable - see
 /// [blocks].
 class AppRelease {
-  const AppRelease({this.minVersion, this.latestVersion, this.serverVersion, this.message});
+  const AppRelease({
+    this.minVersion,
+    this.latestVersion,
+    this.serverVersion,
+    this.message,
+    this.updateUrl,
+  });
 
   /// The oldest version still allowed to run. Below this the app blocks.
   final String? minVersion;
@@ -396,6 +402,11 @@ class AppRelease {
 
   /// Optional line explaining *why* an update is required, shown on the gate.
   final String? message;
+
+  /// Where a platform without a store (Windows, direct-download macOS) gets
+  /// the new build. Optional; the update wall falls back to [Links.website].
+  /// Ignored on Android, which always goes to Google Play.
+  final String? updateUrl;
 
   /// Whether [current] is old enough to be locked out.
   ///
@@ -423,7 +434,18 @@ class AppRelease {
     latestVersion: j['latest_version'] as String?,
     serverVersion: j['server_version'] as String?,
     message: j['message'] as String?,
+    updateUrl: _httpUrl(j['update_url']),
   );
+
+  /// Accepts only an absolute http(s) URL. Anything else - a wrong type, a
+  /// relative path, a `javascript:` link - is dropped rather than launched.
+  static String? _httpUrl(Object? raw) {
+    if (raw is! String) return null;
+    final uri = Uri.tryParse(raw.trim());
+    if (uri == null || !uri.hasAuthority) return null;
+    if (uri.scheme != 'https' && uri.scheme != 'http') return null;
+    return uri.toString();
+  }
 }
 
 /// Public URLs the app links to but never calls as an API.

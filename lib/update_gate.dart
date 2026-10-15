@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -113,13 +114,30 @@ class UpdateRequiredScreen extends StatelessWidget {
   final AppRelease? release;
   final AppVersion current;
 
-  /// Runs Play's in-app update. Falls back to opening the store listing when
-  /// absent, which is the only option on a platform without in-app updates.
+  /// Runs Play's in-app update. Falls back to [updateDestination] when absent,
+  /// which is the only option on a platform without in-app updates.
   final VoidCallback? onUpdate;
 
-  static Future<void> openStore() async {
-    // market: opens the Play app directly. It fails on a device without Play
-    // (and on desktop), so fall back to the browser rather than doing nothing.
+  /// Where the update button sends the user when there is no in-app flow.
+  ///
+  /// Only Android has a store to go to. Windows (and direct-download macOS)
+  /// would otherwise be sent to an Android listing they cannot install, so they
+  /// get the server's [AppRelease.updateUrl], or the website without one.
+  /// Returns null on Android, meaning "use Google Play".
+  static String? updateDestination(AppRelease? release, {TargetPlatform? platform}) {
+    final p = platform ?? defaultTargetPlatform;
+    if (!kIsWeb && p == TargetPlatform.android) return null;
+    return release?.updateUrl ?? Links.website;
+  }
+
+  static Future<void> openStore([AppRelease? release]) async {
+    final elsewhere = updateDestination(release);
+    if (elsewhere != null) {
+      await launchUrl(Uri.parse(elsewhere), mode: LaunchMode.externalApplication);
+      return;
+    }
+    // market: opens the Play app directly. It fails on a device without Play,
+    // so fall back to the browser rather than doing nothing.
     final direct = Uri.parse(Links.playStore);
     try {
       if (await launchUrl(direct, mode: LaunchMode.externalApplication)) return;
@@ -176,7 +194,7 @@ class UpdateRequiredScreen extends StatelessWidget {
                 const SizedBox(height: 22),
                 BrutalButton(
                   color: Brutal.lime,
-                  onPressed: onUpdate ?? openStore,
+                  onPressed: onUpdate ?? () => openStore(release),
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   child: Text(t['updateButton']),
                 ),

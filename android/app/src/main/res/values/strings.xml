@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shown in Android Settings > Notifications for the push channel. -->
+    <string name="notification_channel_posts">New posts</string>
+    <string name="notification_channel_posts_description">One notification when something new is posted.</string>
+</resources>

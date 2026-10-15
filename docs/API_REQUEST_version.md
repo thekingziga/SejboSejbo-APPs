@@ -40,6 +40,7 @@ CORS-open, `Cache-Control: no-store`, no auth.
 | `latest_version` | Newest version in the store. Non-blocking. |
 | `server_version` | The website's own version, shown beside the app's. |
 | `message` | Optional one-liner shown on the wall explaining why. Keep it short and factual. |
+| `update_url` | *(app builds after 1.18.3)* Where the **Windows / direct-download macOS** build is downloaded. Absolute `https://` URL. Android ignores it and always goes to Google Play. Without it, desktop update buttons open `https://sejbosejbo.fyi`. Suggested env var: `APP_UPDATE_URL`. |
 
 Drive them from env vars (`APP_MIN_VERSION`, `APP_LATEST_VERSION`,
 `APP_UPDATE_MESSAGE`) so forcing an update is an `.env` edit plus

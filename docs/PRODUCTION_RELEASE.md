@@ -62,6 +62,11 @@ is bad" (`400`) from "we could not reach the store" (`5xx`).
 
 ## Verified in the built bundle
 
+Build Android releases with `tool/build_android_release.sh`. It explicitly sets
+`API_BASE_URL=https://sejbosejbo.fyi`; `lib/api.dart` also defaults release
+builds to that URL as a second guard. Debug builds still default to demo data.
+The generated bundle is `build/app/outputs/bundle/release/app-release.aab`.
+
 Checked against the artefact rather than the source, since these are the ones
 that fail silently:
 

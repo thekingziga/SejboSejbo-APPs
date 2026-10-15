@@ -65,8 +65,9 @@ class DonationResult {
 }
 
 class DonationGateway {
-  DonationGateway(this._api, {bool? isGooglePlay})
-    : _isGooglePlay = isGooglePlay ?? (!kIsWeb && Platform.isAndroid);
+  DonationGateway(this._api, {bool? isGooglePlay, bool? storeBilling})
+    : _isGooglePlay = isGooglePlay ?? (!kIsWeb && Platform.isAndroid),
+      _storeBilling = storeBilling ?? supportsStoreBilling;
 
   final Api _api;
 
@@ -75,6 +76,11 @@ class DonationGateway {
   /// what happens to one that is never finished - so it is decided once here.
   /// Overridable only so tests can exercise both rails on one host.
   final bool _isGooglePlay;
+
+  /// Whether [init] talks to a store at all. Defaults to
+  /// [supportsStoreBilling], which reads the *host* OS - overridable so the
+  /// receipt tests run on a Windows or Linux host, not only on a Mac.
+  final bool _storeBilling;
   final InAppPurchase _iap = InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _sub;
 
@@ -118,7 +124,7 @@ class DonationGateway {
   bool get storeReady => _available && _products.isNotEmpty;
 
   Future<void> init() async {
-    if (!supportsStoreBilling) return;
+    if (!_storeBilling) return;
 
     try {
       _available = await _iap.isAvailable();

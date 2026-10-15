@@ -67,3 +67,46 @@ std::string Utf8FromUtf16(const wchar_t* utf16_string) {
   }
   return utf8_string;
 }
+
+void RegisterUrlScheme(const wchar_t* scheme) {
+  if (scheme == nullptr || wcslen(scheme) == 0) {
+    return;
+  }
+
+  wchar_t exe_path[MAX_PATH];
+  if (!::GetModuleFileNameW(nullptr, exe_path, MAX_PATH)) {
+    return;
+  }
+
+  std::wstring subkey = std::wstring(L"Software\\Classes\\") + scheme;
+  HKEY key = nullptr;
+  if (::RegCreateKeyExW(HKEY_CURRENT_USER, subkey.c_str(), 0, nullptr,
+                        REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, nullptr, &key,
+                        nullptr) != ERROR_SUCCESS) {
+    return;
+  }
+
+  std::wstring desc = std::wstring(L"URL:") + scheme + L" Protocol";
+  ::RegSetValueExW(key, nullptr, 0, REG_SZ,
+                   reinterpret_cast<const BYTE*>(desc.c_str()),
+                   static_cast<DWORD>((desc.length() + 1) * sizeof(wchar_t)));
+
+  const wchar_t* empty = L"";
+  ::RegSetValueExW(key, L"URL Protocol", 0, REG_SZ,
+                   reinterpret_cast<const BYTE*>(empty),
+                   static_cast<DWORD>(sizeof(wchar_t)));
+
+  HKEY cmd_key = nullptr;
+  std::wstring cmd_subkey = subkey + L"\\shell\\open\\command";
+  if (::RegCreateKeyExW(HKEY_CURRENT_USER, cmd_subkey.c_str(), 0, nullptr,
+                        REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, nullptr, &cmd_key,
+                        nullptr) == ERROR_SUCCESS) {
+    std::wstring cmd = std::wstring(L"\"") + exe_path + L"\" \"%1\"";
+    ::RegSetValueExW(cmd_key, nullptr, 0, REG_SZ,
+                     reinterpret_cast<const BYTE*>(cmd.c_str()),
+                     static_cast<DWORD>((cmd.length() + 1) * sizeof(wchar_t)));
+    ::RegCloseKey(cmd_key);
+  }
+
+  ::RegCloseKey(key);
+}

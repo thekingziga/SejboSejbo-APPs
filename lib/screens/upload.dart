@@ -134,6 +134,14 @@ class _UploadScreenState extends State<UploadScreen> {
     }
   }
 
+  /// image_cropper has native editors only on Android and iOS in this build
+  /// (no Windows/macOS plugin is registered, and web would need its own
+  /// settings). Everywhere else the Edit button is hidden.
+  static bool get _cropperSupported =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
+
   /// Opens the crop/rotate editor on whatever is currently selected. Works for
   /// both picked files and pasted bytes - pasted images have no path, so they
   /// are written to a temp file first.
@@ -269,7 +277,10 @@ class _UploadScreenState extends State<UploadScreen> {
                   onCamera: () => _pick(ImageSource.camera),
                   onGallery: () => _pick(ImageSource.gallery),
                   onPaste: _pasteFromClipboard,
-                  onEdit: _edit,
+                  // Same story for the editor: image_cropper only registers on
+                  // Android and iOS. On Windows/macOS Edit always failed with
+                  // an error, so it is not offered there.
+                  onEdit: _cropperSupported ? _edit : null,
                   media: _media,
                   onFile: _pickMedia,
                   onClear: () => setState(() {
@@ -397,7 +408,8 @@ class _PickerZone extends StatelessWidget {
   final VoidCallback onCamera;
   final VoidCallback onGallery;
   final VoidCallback onPaste;
-  final VoidCallback onEdit;
+  /// Null where no image editor exists on this platform - the button is hidden.
+  final VoidCallback? onEdit;
   final VoidCallback onClear;
 
   @override
@@ -483,12 +495,13 @@ class _PickerZone extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 child: Text(t['change']),
               ),
-              BrutalButton(
-                color: Brutal.yellow,
-                onPressed: onEdit,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                child: Text(t['edit']),
-              ),
+              if (onEdit != null)
+                BrutalButton(
+                  color: Brutal.yellow,
+                  onPressed: onEdit,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  child: Text(t['edit']),
+                ),
               BrutalButton(
                 color: Brutal.lime,
                 onPressed: onPaste,

@@ -733,6 +733,43 @@ void main() {
       expect(r.updateAvailable(mine), isTrue);
     });
 
+    test('only Android is sent to Google Play when an update is forced', () {
+      final withUrl = AppRelease.fromJson({'update_url': 'https://sejbosejbo.fyi/download'});
+      // Null means "use Play".
+      expect(
+        UpdateRequiredScreen.updateDestination(withUrl, platform: TargetPlatform.android),
+        isNull,
+      );
+      // Windows used to get the Android listing too - an app it cannot install.
+      expect(
+        UpdateRequiredScreen.updateDestination(withUrl, platform: TargetPlatform.windows),
+        'https://sejbosejbo.fyi/download',
+      );
+      expect(
+        UpdateRequiredScreen.updateDestination(null, platform: TargetPlatform.windows),
+        Links.website,
+        reason: 'no server opinion falls back to the website, not to Play',
+      );
+      expect(
+        UpdateRequiredScreen.updateDestination(
+          AppRelease.fromJson(const {}),
+          platform: TargetPlatform.macOS,
+        ),
+        Links.website,
+      );
+    });
+
+    test('update_url accepts only absolute http(s) links', () {
+      String? url(Object? v) => AppRelease.fromJson({'update_url': v}).updateUrl;
+      expect(url('https://example.test/get'), 'https://example.test/get');
+      expect(url('  https://example.test/get  '), 'https://example.test/get');
+      expect(url('/download'), isNull);
+      expect(url('javascript:alert(1)'), isNull);
+      expect(url('market://details?id=x'), isNull);
+      expect(url(42), isNull);
+      expect(url(null), isNull);
+    });
+
     test('release() returns null on every kind of failure, so nothing blocks', () async {
       Future<void> expectNull(http.Response Function() respond) async {
         final api = Api(
@@ -775,6 +812,77 @@ void main() {
       expect(r.message, 'Voting changed.');
       expect(r.blocks('1.8.0'), isFalse);
       expect(r.blocks('1.4.0'), isTrue);
+    });
+  });
+
+  group('update gate', () {
+    Widget buildGate({
+      required Api api,
+      required StoreUpdates store,
+      required Widget child,
+    }) {
+      return L10n(
+        strings: Strings.of(Lang.en),
+        onChange: (_) {},
+        child: MaterialApp(
+          home: UpdateGate(api: api, store: store, child: child),
+        ),
+      );
+    }
+
+    testWidgets('lets the user through when no update is needed', (tester) async {
+      AppVersion.cachedForTest = const AppVersion(version: '1.8.0', build: '10');
+      addTearDown(() => AppVersion.cachedForTest = null);
+
+      final api = Api(
+        baseUrl: 'https://example.test',
+        useDemoData: false,
+        client: MockClient((_) async => http.Response('{"min_version":"1.7.0"}', 200)),
+      );
+      final store = _FakeStore(ready: false);
+
+      await tester.pumpWidget(buildGate(api: api, store: store, child: const Text('app child')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('app child'), findsOneWidget);
+      expect(find.byType(UpdateRequiredScreen), findsNothing);
+    });
+
+    testWidgets('shows UpdateRequiredScreen when store update is ready', (tester) async {
+      AppVersion.cachedForTest = const AppVersion(version: '1.8.0', build: '10');
+      addTearDown(() => AppVersion.cachedForTest = null);
+
+      final api = Api(
+        baseUrl: 'https://example.test',
+        useDemoData: false,
+        client: MockClient((_) async => http.Response('{"min_version":"1.7.0"}', 200)),
+      );
+      final store = _FakeStore(ready: true, accepts: false);
+
+      await tester.pumpWidget(buildGate(api: api, store: store, child: const Text('app child')));
+      await tester.pumpAndSettle();
+
+      expect(store.immediateStarted, 1);
+      expect(find.byType(UpdateRequiredScreen), findsOneWidget);
+      expect(find.text('app child'), findsNothing);
+    });
+
+    testWidgets('blocks when server min_version is newer', (tester) async {
+      AppVersion.cachedForTest = const AppVersion(version: '1.8.0', build: '10');
+      addTearDown(() => AppVersion.cachedForTest = null);
+
+      final api = Api(
+        baseUrl: 'https://example.test',
+        useDemoData: false,
+        client: MockClient((_) async => http.Response('{"min_version":"1.9.0"}', 200)),
+      );
+      final store = _FakeStore(ready: false);
+
+      await tester.pumpWidget(buildGate(api: api, store: store, child: const Text('app child')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(UpdateRequiredScreen), findsOneWidget);
+      expect(find.text('app child'), findsNothing);
     });
   });
 
@@ -890,7 +998,7 @@ void main() {
           return http.Response(status == 200 ? '{}' : '{"error":"nope"}', status);
         }),
       );
-      final g = DonationGateway(api, isGooglePlay: google);
+      final g = DonationGateway(api, isGooglePlay: google, storeBilling: true);
       addTearDown(g.dispose);
       return g;
     }
@@ -999,6 +1107,17 @@ void main() {
           .map((m) => m.group(1))
           .toList();
       expect(prefixes, ['/post']);
+    });
+
+    test('deep link parsing extracts post id from web and custom scheme', () {
+      expect(SejbosejboApp.parsePostId(Uri.parse('https://sejbosejbo.fyi/post/123')), 123);
+      expect(SejbosejboApp.parsePostId(Uri.parse('https://sejbosejbo.fyi/post/456?ref=share')), 456);
+      expect(SejbosejboApp.parsePostId(Uri.parse('sejbosejbo://post/789')), 789);
+      expect(SejbosejboApp.parsePostId(Uri.parse('sejbosejbo://sejbosejbo.fyi/post/42')), 42);
+      expect(SejbosejboApp.parsePostId(Uri.parse('sejbosejbo:///post/99')), 99);
+      expect(SejbosejboApp.parsePostId(Uri.parse('https://sejbosejbo.fyi/marketplace')), isNull);
+      expect(SejbosejboApp.parsePostId(Uri.parse('sejbosejbo://post/invalid')), isNull);
+      expect(SejbosejboApp.parsePostId(Uri.parse('https://sejbosejbo.fyi/post')), isNull);
     });
   });
 
