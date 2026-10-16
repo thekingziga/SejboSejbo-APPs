@@ -48,4 +48,6 @@ Last updated: 2026-10-16 01:10 (Europe/Ljubljana) - Antigravity session
 - `flutter test`: **165 passed, 0 failed**.
 - `flutter build windows --debug`: **Built successfully** -> `build\windows\x64\runner\Debug\sejbosejbo.exe`.
 - `flutter build apk --debug`: **Built successfully** -> `build\app\outputs\flutter-apk\app-debug.apk`.
-- `flutter build appbundle --release`: **Built successfully** -> `build\app\outputs\bundle\release\app-release.aab` (59.1 MB, verified signed with upload key SHA-1 `29:12:9F:FB:09:58:51:51:26:76:59:1C:16:2E:25:E8:B0:CA:83:E5`).
+- `flutter build appbundle --release`: **Built successfully** -> `build\app\outputs\bundle\release\app-release.aab` (59.1 MB, verified signed with upload key SHA-1 `29:12:9F:FB:09:58:51:51:26:76:59:1C:16:2E:25:E8:B0:CA:83:E5`, versionCode 29).
+- **Windows standalone zip**: `D:\sejbosejbo-windows-x64-v1.18.3.zip` (17.7 MB).
+- **GitHub Tags**: 27 version tags (`v1.0.0` through `v1.18.3`) created and pushed to `origin`. Each tag provides automated source code `.zip` and `.tar.gz` downloads on GitHub.
