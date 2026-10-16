@@ -452,9 +452,10 @@ class AppRelease {
 class Links {
   const Links._();
 
-  static const privacy = 'https://sejbosejbo.fyi/privacy';
-  static const terms = 'https://sejbosejbo.fyi/terms';
-  static const website = 'https://sejbosejbo.fyi';
+  static const website =
+      String.fromEnvironment('WEBSITE_URL', defaultValue: 'https://sejbosejbo.fyi');
+  static String get privacy => '$website/privacy';
+  static String get terms => '$website/terms';
 
   /// The website's classifieds. A browser link, not a screen, and deliberately
   /// not a WebView: signing in there is an emailed link that opens in the

@@ -102,14 +102,13 @@ class Api {
     _demo = useDemoData ?? this.baseUrl.isEmpty;
   }
 
-  /// A release build must never quietly ship the sample feed. Debug builds
-  /// keep demo mode as the easy default; production builds use the live site
-  /// unless a different API_BASE_URL was explicitly supplied.
+  /// In the template, API_BASE_URL is passed via:
+  ///   --dart-define=API_BASE_URL=https://your-domain.com
+  /// If omitted, the app starts in demo mode on sample posts.
   static String _resolveBaseUrl(String? override) {
     final configured =
         (override ?? const String.fromEnvironment('API_BASE_URL')).trim();
-    if (configured.isNotEmpty) return configured;
-    return kReleaseMode ? 'https://sejbosejbo.fyi' : '';
+    return configured;
   }
 
   final String baseUrl;
